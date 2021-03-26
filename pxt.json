@@ -20,5 +20,5 @@
         "arcade"
     ],
     "preferredEditor": "tsprj",
-    "languageRestriction": ""
+    "languageRestriction": "javascript-only"
 }
