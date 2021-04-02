@@ -13,7 +13,6 @@ localPlayer.afterMove = function() {
 
 game.onUpdate(function() {
     localPlayer.update();
-    localPlayer.sprite.say(`${localPlayer.posX};${localPlayer.posY}`)
     for (let i = 0; i < CLevelManager.entitys.length; i++) {
         CLevelManager.entitys[i].update();
     }
@@ -77,7 +76,7 @@ class CPathFind {
     endPosY: number;
     whitelistIds: number[];
     neighbors = [[0,-1],[0,1],[-1,0],[1,0]];
-    //sprites: Sprite[];
+    sprites: Sprite[];
     constructor() {
         this.visitedCount = -1;
         this.endPosX = -1;
@@ -133,9 +132,12 @@ class CPathFind {
                 }
             })
         }
-        /*this.sprites.forEach(function(value: Sprite, index: number) {
-            value.destroy();
-        })*/
+        if (this.sprites) {
+            this.sprites.forEach(function(value: Sprite, index: number) {
+                value.destroy();
+            })
+        }
+
         let path:CPathSpot[] = [];
         if (foundEnd && this.spots[endPosY][endPosX].cameFromX != -1 && this.spots[endPosY][endPosX].cameFromY != -1) {
             for (let actSpot: CPathSpot = this.spots[endPosY][endPosX]; //path reached end
@@ -143,12 +145,12 @@ class CPathFind {
              actSpot = this.spots[actSpot.cameFromY][actSpot.cameFromX]) {
                 path.push(actSpot);
                 
-                /*if (this.sprites) {
+                if (this.sprites) {
                     let spr = sprites.create(assets.image`x`)
                     this.sprites.push(spr)
                     spr.setPosition(actSpot.posX * 16 + 8, actSpot.posY * 16 + 8)
                     //spr.say(actSpot.f)
-                }*/
+                }
             }
             path.push(this.spots[startPosY][startPosX]);
             path.reverse();
@@ -169,7 +171,7 @@ class CPathFind {
             let ent = CLevelManager.entityAtPos(posX, posY);
             if (ent && this.whitelistIds.indexOf(ent.id) == -1) {
                 let thisent = CLevelManager.entityAtPos(this.startPosX, this.startPosY);
-                console.log(`[pathFinder] ${thisent} -> ${ent}`)
+                //console.log(`[pathFinder] ${thisent} -> ${ent}`)
                 return -1;
             }
         }
@@ -199,12 +201,12 @@ class CPathFind {
 
         return 0;
     }
-    destroy() {/*
+    destroy() {
         if (this.sprites) {
             this.sprites.forEach(function(value: Sprite, index: number) {
                 value.destroy();
             })
-        }*/
+        }
     }
 }
 

@@ -18,31 +18,22 @@ namespace Entity {
         id: number;
         posX: number;
         posY: number;
-        lastPosX: number;
-        lastPosY: number;
         sprite: Sprite; 
         
         constructor(imgSpriteImage: Image, spriteKind: number, posX?: number, posY?: number) {
             this.posX = posX;
             this.posY = posY;
-            this.lastPosX = posX;
-            this.lastPosY = posY;
             this.id = CEntity.uid++;
             this.sprite = sprites.create(imgSpriteImage, spriteKind);
         }
         setPositionAbsolute(x:number, y:number) {
-            this.lastPosX = x;
-            this.lastPosY = y;
             this.posX = x;
             this.posY = y;
             this.sprite.setPosition(this.posX * 16 + 8, this.posY * 16 + 8);
         }
         setPosition(x:number, y:number) {
-            this.lastPosX = this.posX;
-            this.lastPosY = this.posY;
             this.posX = x;
             this.posY = y;
-            //this.sprite.setPosition(this.posX * 16 + 8, (this.posY * 16 + 8));
         }
         changePosition(x:number, y:number) {
             this.setPosition(this.posX + x, this.posY + y);
@@ -59,6 +50,8 @@ namespace Entity {
         moveCounter: number;
         moveDirection: MoveDirection;
         moveDirectionOld: MoveDirection;
+        lastPosX: number;
+        lastPosY: number;
         moveTimer: number
         constructor(imgSpriteImage: Image, spriteKind: number, imageMoveMap?: Image[][], posX?: number, posY?: number) {
             super(imgSpriteImage, spriteKind, posX, posY);
@@ -70,29 +63,37 @@ namespace Entity {
         }
         setPositionAbsolute(x:number, y:number) {
             super.setPositionAbsolute(x, y);
-            this.moveTimer = game.runtime();
+            this.lastPosX = x;
+            this.lastPosY = y;
         }
         setPosition(x:number, y:number) {
-            super.setPosition(x, y);
-            this.moveTimer = game.runtime();
-            //this.sprite.setPosition(this.posX * 16 + 8, (this.posY * 16 + 8));
+            this.posX = x;
+            this.posY = y;
         }
         update() {
             let pxPosX = this.posX * 16 + 8;
             let pxPosY = this.posY * 16 + 8;
 
+            //this.sprite.setPosition(pxPosX, pxPosY);
+            //return;
             let diffSpritePosX = pxPosX - this.sprite.x;
             let diffSpritePosY = pxPosY - this.sprite.y;
 
-            let step = Math.max((game.runtime() - this.moveTimer), 400) / 100;
-            step = step < 1 ? 1 : step;
+            if (this instanceof CLocalPlayer)
+                console.log(this);
 
-            do { // call an ambulance
-                if (Math.round(diffSpritePosX) != 0 || Math.round(diffSpritePosY) != 0)
-                {
-                    this.sprite.setPosition(this.sprite.x + diffSpritePosX / step, this.sprite.y + diffSpritePosY / step)
-                }
-            } while ( Math.abs(Math.round(this.sprite.x - pxPosX)) > 16 || Math.abs(Math.round(this.sprite.y - pxPosY)) > 16)
+            let step = Math.min(3.5, Math.max(1,game.runtime() - this.moveTimer));
+
+
+            if (Math.round(diffSpritePosX) != 0 || Math.round(diffSpritePosY) != 0)
+            {
+                this.sprite.setPosition(this.sprite.x + diffSpritePosX / step, this.sprite.y + diffSpritePosY / step)
+            }
+
+            if ( this.posX != this.lastPosX || this.posY != this.lastPosY ) {
+                this.lastPosX = this.posX;
+                this.lastPosY = this.posY;
+            }
         }
         spawn(nPosX: number, nPosY: number) {
             this.setPositionAbsolute(nPosX, nPosY);
@@ -191,7 +192,9 @@ namespace Entity {
                 this.afterMove()
             return true;
         }
-
+        toString() {
+            return `CLocalPlayer [${this.id},${game.runtime() - this.moveTimer}]`;
+        }
     }
 
     export class CEnemyBlob extends CMovingEntity {
