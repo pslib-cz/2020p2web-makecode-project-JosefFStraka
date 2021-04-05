@@ -3,11 +3,17 @@ let g_Level: number = 0;
 let g_Score: number = 0;
 
 let localPlayer = new Entity.CLocalPlayer(sprites.castle.heroWalkFront1, SpriteKind.Player);
+localPlayer.sprite.z = 1;
 
 CLevelManager.loadLevel(lvlLevelArr[g_Level]);
 localPlayer.afterMove = function() {
     for (let i = 0; i < CLevelManager.entitys.length; i++) {
         CLevelManager.entitys[i].move();
+    }
+    for (let i = 0; i < CLevelManager.triggers.length; i++) {
+        if (CLevelManager.triggers[i].posX == localPlayer.posX && CLevelManager.triggers[i].posY == localPlayer.posY) {
+            CLevelManager.triggers[i].setActivated();
+        }
     }
 }
 
@@ -27,10 +33,6 @@ game.onUpdateInterval(1000, function() {
 game.onUpdateInterval(100, function() {
     info.setScore(g_Tick);
 })
-controller.A.onEvent(ControllerButtonEvent.Pressed, function() {
-    g_Tick++;
-    localPlayer.afterMove()
-});
 controller.up.onEvent(ControllerButtonEvent.Pressed, function() {
     localPlayer.move(MoveDirection.Top);
 })
@@ -167,19 +169,19 @@ class CPathFind {
         this.visited[posY][posX] = true;
         
         if (this.mapLayout[posY][posX] != " ") return -1;
-        if (this.whitelistIds) {
-            let ent = CLevelManager.entityAtPos(posX, posY);
-            if (ent && this.whitelistIds.indexOf(ent.id) == -1) {
-                let thisent = CLevelManager.entityAtPos(this.startPosX, this.startPosY);
-                //console.log(`[pathFinder] ${thisent} -> ${ent}`)
-                return -1;
+
+        let ent = CLevelManager.entityAtPos(posX, posY);
+        if (ent) {
+            if (this.whitelistIds && this.whitelistIds.indexOf(ent.id) != -1) {
+            } else {
+                if (ent.sprite.kind() != SpriteKind.Enemy)
+                    return -1; 
             }
         }
+
         if (posX == this.endPosX && posY == this.endPosY) return 1;
 
-        //let neighbors:number[][] = [[0,-1],[0,1],[-1,0],[1,0]];
         let neighborsSpots:CPathSpot[] = [];
-        
         for (let i = 0; i < this.neighbors.length; i++)
         {
             let xy: number[] = this.neighbors[i];
