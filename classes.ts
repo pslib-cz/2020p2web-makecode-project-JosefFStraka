@@ -61,12 +61,12 @@ namespace Entity {
     }
     export class CMovingEntity extends CEntity {
         imageMoveMap: Image[][];
-        moveCounter: number;
-        moveDirection: MoveDirection;
-        moveDirectionOld: MoveDirection;
-        lastPosX: number;
-        lastPosY: number;
-        moveTimer: number
+        protected moveCounter: number;
+        protected moveDirection: MoveDirection;
+        protected moveDirectionOld: MoveDirection;
+        protected moveTimer: number
+        protected lastPosX: number;
+        protected lastPosY: number;
         constructor(imgSpriteImage: Image, spriteKind: number, imageMoveMap?: Image[][], posX?: number, posY?: number) {
             super(imgSpriteImage, spriteKind, posX, posY);
             this.imageMoveMap = imageMoveMap;
@@ -254,6 +254,23 @@ namespace Entity {
                 this.afterMove()
             return true;
         }
+        /*update() {
+            super.update()
+            switch (this.moveDirection) {
+                case MoveDirection.Down: {
+                    animation.runImageAnimation(null, [])
+                } break;
+                case MoveDirection.Top: {
+
+                } break;
+                case MoveDirection.Right: {
+
+                } break;
+                case MoveDirection.Left: {
+
+                } break;
+            }
+        }*/
         toString() {
             return `CLocalPlayer [${this.id}; x:${this.posX} y:${this.posY}`;
         }
@@ -271,11 +288,10 @@ namespace Entity {
             if (posX && posY) {
                 this.spawn(posX, posY);
             }
-            this.sprite.setImage(this.imageMoveMap[this.moveDirection][this.state]);
+            this.sprite.setImage(imgSpriteImage);
         }
         move(moveDirection?: MoveDirection) {
             if (!this.target) return;
-            console.log("x")
             let path = [];       
             if (this.state == StateEnemyBlob.Move) { 
             } else {
@@ -310,20 +326,32 @@ namespace Entity {
                         let pathDiffX = path[1].posX - path[1].cameFromX;
                         let pathDiffY = path[1].posY - path[1].cameFromY;
 
+                        let tempNewPosX = 0;
+                        let tempNewPosY = 0;
+
                         let newPosX = 0;
                         let newPosY = 0;
 
-                        let ent = CLevelManager.entityAtPos(path[0].posX + pathDiffX, path[0].posY + pathDiffY)
-                        if (!ent) {
-                            newPosX = path[0].posX + pathDiffX; newPosY = path[0].posY + pathDiffY;
+                        tempNewPosX = path[0].posX + pathDiffX;
+                        tempNewPosY = path[0].posY + pathDiffY;
+                        let ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
+                        if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                            newPosX = tempNewPosX;
+                            newPosY = tempNewPosY;
                         } else {
-                            ent = CLevelManager.entityAtPos(path[0].posX + pathDiffX, path[0].posY - pathDiffY)
-                            if (!ent) {
-                                newPosX = path[0].posX + pathDiffX; newPosY = path[0].posY - pathDiffY;
+                            tempNewPosX = path[0].posX + pathDiffX;
+                            tempNewPosY = path[0].posY - pathDiffY;
+                            ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
+                            if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                                newPosX = tempNewPosX;
+                                newPosY = tempNewPosY;
                             }else{
-                                ent = CLevelManager.entityAtPos(path[0].posX - pathDiffX, path[0].posY + pathDiffY)
-                                if (!ent) {
-                                    newPosX = path[0].posX - pathDiffX; newPosY = path[0].posY + pathDiffY;
+                                tempNewPosX = path[0].posX - pathDiffX;
+                                tempNewPosY = path[0].posY + pathDiffY;
+                                ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
+                                if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                                    newPosX = tempNewPosX;
+                                    newPosY = tempNewPosY;
                                 }
                             }
                         }
@@ -348,7 +376,7 @@ namespace Entity {
             }
 
             this.state = ++this.state % StateEnemyBlob.MAX;
-            this.sprite.setImage(this.imageMoveMap[this.moveDirection][this.state]);
+            animation.runImageAnimation(this.sprite, CEnemyBlob.defaultImageMoveMap[this.state], 120, true)
         }
         destroy() {
             super.destroy();
@@ -363,7 +391,7 @@ namespace Entity {
         target: CEntity;
         pathFinder: CPathFind;
         constructor(imgSpriteImage: Image, spriteKind: number, posX?:number, posY?:number, imageMoveMap?: Image[][]) {
-            super(imgSpriteImage, spriteKind, imageMoveMap ? imageMoveMap : CEnemyBlob.defaultImageMoveMap);
+            super(imgSpriteImage, spriteKind, imageMoveMap ? imageMoveMap : CEnemySkull.defaultImageMoveMap);
             this.pathFinder = new CPathFind();
             if (posX && posY) {
                 this.spawn(posX, posY);
@@ -438,7 +466,8 @@ namespace Entity {
                 }
             }
 
-            this.sprite.setImage(this.imageMoveMap[this.moveDirection][0]);
+            animation.runImageAnimation(this.sprite, CEnemyBlob.defaultImageMoveMap[0], 120, true)
+            //this.sprite.setImage(this.imageMoveMap[this.moveDirection][0]);
         }
         destroy() {
             super.destroy();
@@ -456,10 +485,11 @@ namespace Entity {
     Entity.CButton.defaultImages         = [sprites.dungeon.buttonOrange, sprites.dungeon.buttonPink, sprites.dungeon.buttonTeal];
     Entity.CButton.defaultImagesPressed  = [sprites.dungeon.buttonOrangeDepressed, sprites.dungeon.buttonPinkDepressed, sprites.dungeon.buttonTealDepressed];
     Entity.CEnemyBlob.defaultImageMoveMap = [
-        [sprites.castle.skellyAttackFront2, sprites.castle.skellyWalkFront1],
-        [sprites.castle.skellyAttackFront2, sprites.castle.skellyWalkRight1],
-        [sprites.castle.skellyAttackFront2, sprites.castle.skellyWalkFront1],
-        [sprites.castle.skellyAttackFront2, sprites.castle.skellyWalkLeft1],
+        assets.animation`enemyBlobCharged`,
+        assets.animation`enemyBlobIdle`,
+    ];
+    Entity.CEnemySkull.defaultImageMoveMap = [
+        assets.animation`enemyBlobCharged`,
     ];
     Entity.CLocalPlayer.defaultImageMoveMap = [
         [sprites.castle.heroWalkBack1       ,sprites.castle.heroWalkBack2       ,sprites.castle.heroWalkBack3       ,sprites.castle.heroWalkBack4       ],
