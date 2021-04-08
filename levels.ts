@@ -107,13 +107,13 @@ class CLevelManager {
         for (let i = 0; i < level.mapLayout.length; i++) {
             for (let j = 0; j < level.mapLayout[0].length; j++) {
                 if (level.mapLayout[i][j] == "x") {
-                    let en = new Entity.CEnemyBlob(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, j, i);
+                    let en = new Entity.CEnemyBlob(j, i);
                     this.entitys.push(en);
                     //en.spawn();
                     en.target = localPlayer;
                     level.mapLayout[i][j] = " ";
                 } else if (level.mapLayout[i][j] == "x2") {
-                    let en = new Entity.CEnemySkull(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, j, i);
+                    let en = new Entity.CEnemySkull(j, i);
                     this.entitys.push(en);
                     //en.spawn();
                     en.target = localPlayer;
@@ -182,38 +182,43 @@ let lvlLevelArr: CLevel[] = [
         [" ", " ", " ", "#", " ", "#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //3
         [" ", " ", " ", "#", " ", "#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //4
         [" ", " ", " ", "#", " ", "#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "], //5
-        ["#", "#", "#", "#", "V", "#", "#", "#", "#", " ", " ", " ", " ", " ", " ", " "], //6
-        ["#", "V", " ", " ", " ", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //7
+        ["#", "#", "#", "#", " ", "#", "#", "#", "#", " ", " ", " ", " ", " ", " ", " "], //6
+        ["#", "V", " ", " ", "V", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //7
         ["#", "V", " ", " ", " ", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //8
-        ["#", "V", " ", " ", "#", " ", " ", "T0", "#", " ", " ", " ", " ", " ", " ", " "], //9
-        ["#", "V", " ", " ", "x2", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //10
-        ["#", "V", " ", " ", " ", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //11
-        ["#", "#", "#", "#", "#", "#", "#", "#", "#", " ", " ", "#", "#", "#", "#", "#"], //12
-        ["#", "T1", " ", " ", " ", " ", " ", " ", "#", "#", " ", "#", " ", " ", " ", "#"], //13
-        ["#", " ", " ", " ", " ", " ", " ", " ", " ", "#", "#", "#", " ", " ", " ", "#"], //14
-        ["#", " ", " ", " ", " ", " ", " ", " ", " ", "#", " ", "#", " ", "E", " ", "#"], //15
-        ["#", " ", "x", " ", " ", " ", "x", " ", " ", "#", "#", "#", " ", " ", " ", "#"], //16
-        ["#", " ", " ", " ", "x", " ", " ", "T2", "#", "#", " ", "#", "#", "#", "#", "#"], //17
-        ["#", "#", "#", "#", "#", "#", "#", "#", "#", " ", " ", " ", " ", " ", " ", " "], //18
+        ["#", "V", " ", " ", " ", " ", " ", "T0", "#", " ", " ", " ", " ", " ", " ", " "], //9
+        ["#", "V", " ", " ", "#", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //10
+        ["#", "V", " ", " ", "x2", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //11
+        ["#", "V", " ", " ", " ", " ", " ", "V", "#", " ", " ", " ", " ", " ", " ", " "], //12
+        ["#", "#", "#", "#", "#", "#", "#", "#", "#", " ", " ", " ", " ", " ", " ", " "], //13
+        ["#", "T1", " ", " ","T3", " ", " ", " ", "#", "#", " ", "#", "#", "#", "#", "#"], //14
+        ["#", " ", " ", " ", " ", " ", " ", " ", " ", "#", "#", "#", " ", " ", " ", "#"], //15
+        ["#", " ", " ", " ", " ", " ", " ", " ", " ", "#", " ", "#", " ", "E", " ", "#"], //16
+        ["#", " ", " ", " ", " ", " ", " ", " ", " ", "#", "#", "#", " ", " ", " ", "#"], //17
+        ["#", " ", " ", " ", " ", " ", " ", "T2", "#", "#", " ", "#", "#", "#", "#", "#"], //18
+        ["#", "#", "#", "#", "#", "#", "#", "#", "#", " ", " ", " ", " ", " ", " ", " "], //19
     ], [() => {
         //console.log("T0")
-        CLevelManager.currentLevel.mapLayout[11][4] = " ";
-        tiles.setTileAt(tiles.getTileLocation(4, 11), sprites.dungeon.darkGroundCenter)
-        tiles.setWallAt(tiles.getTileLocation(4, 11), false)
+        CLevelManager.currentLevel.mapLayout[12][4] = " ";
+        tiles.setTileAt(tiles.getTileLocation(4, 12), sprites.dungeon.darkGroundCenter)
+        tiles.setWallAt(tiles.getTileLocation(4, 12), false)
     },() => {
         //console.log("T1")
-        CLevelManager.currentLevel.mapLayout[14][9] = " ";
-        tiles.setTileAt(tiles.getTileLocation(9, 14), sprites.dungeon.darkGroundCenter)
-        tiles.setWallAt(tiles.getTileLocation(9, 14), false)
+        CLevelManager.currentLevel.mapLayout[15][9] = " ";
+        tiles.setTileAt(tiles.getTileLocation(9, 15), sprites.dungeon.darkGroundCenter)
+        tiles.setWallAt(tiles.getTileLocation(9, 15), false)
  
-        CLevelManager.spawnEntity(new Entity.CEnemyBlob(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, 2, 14))
-        CLevelManager.spawnEntity(new Entity.CEnemyBlob(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, 7, 14))
+        CLevelManager.spawnEntity(new Entity.CEnemyBlob(4, 15))
     },() => {
         //console.log("T2")
-        CLevelManager.currentLevel.mapLayout[14][11] = " ";
-        tiles.setTileAt(tiles.getTileLocation(11, 14), sprites.dungeon.darkGroundCenter)
-        tiles.setWallAt(tiles.getTileLocation(11, 14), false)
+        CLevelManager.currentLevel.mapLayout[15][11] = " ";
+        tiles.setTileAt(tiles.getTileLocation(11, 15), sprites.dungeon.darkGroundCenter)
+        tiles.setWallAt(tiles.getTileLocation(11, 15), false)
 
-        CLevelManager.spawnEntity(new Entity.CEnemyBlob(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, 10, 14))
+        CLevelManager.spawnEntity(new Entity.CEnemyBlob(10, 15))
+    },() => {
+        //console.log("T3")
+
+        CLevelManager.spawnEntity(new Entity.CEnemyBlob(2, 16))
+        CLevelManager.spawnEntity(new Entity.CEnemyBlob(6, 16))
     }])
 ];
