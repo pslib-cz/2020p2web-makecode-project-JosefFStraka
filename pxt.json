@@ -14,6 +14,7 @@
         "tilemap.g.jres",
         "tilemap.g.ts",
         "classes.ts",
+        "pathfinding.ts",
         "levels.ts"
     ],
     "testFiles": [
