@@ -1,6 +1,6 @@
 {
     "name": "template arcade project-name",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "description": "",
     "dependencies": {
         "device": "*"
@@ -14,8 +14,8 @@
         "tilemap.g.jres",
         "tilemap.g.ts",
         "classes.ts",
-        "pathfinding.ts",
-        "levels.ts"
+        "levels.ts",
+        "pathfinding.ts"
     ],
     "testFiles": [
         "test.ts"
