@@ -7,7 +7,6 @@ localPlayer.sprite.z = 1;
 
 CLevelManager.loadLevel(lvlLevelArr[g_Level]);
 localPlayer.afterMove = function() {
-    music.footstep.play()
     for (let i = 0; i < CLevelManager.entitys.length; i++) {
         CLevelManager.entitys[i].move();
     }
