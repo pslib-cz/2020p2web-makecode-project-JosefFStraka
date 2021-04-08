@@ -131,6 +131,10 @@ namespace Entity {
         constructor( posX?: number, posY?: number, imgSpriteImage?: Image) {
             super(imgSpriteImage ? imgSpriteImage : CVase.default_images[randint(0, CVase.default_images.length-1)], SpriteKind.Food, posX, posY);
         }
+        attack() {
+            super.attack()
+            music.knock.play()
+        }
         toString() {
             return `CVase [${this.id}; x:${this.posX} y:${this.posY}]`;
         }
@@ -165,16 +169,19 @@ namespace Entity {
                 this.onActivated();
 
             super.setActivated();
+            music.thump.play()
         }
         toString() {
             return `CButton [${this.id}; x:${this.posX} y:${this.posY}]`;
         }
     }
     export class CLocalPlayer extends CMovingEntity {
+        dead: boolean
         static defaultImageMoveMap: Image[][];
         afterMove: () => void;
-        constructor(imgSpriteImage: Image, spriteKind: number, imageMoveMap?: Image[][]) {
-            super(imgSpriteImage, spriteKind, imageMoveMap ? imageMoveMap : CLocalPlayer.defaultImageMoveMap);
+        constructor(imageMoveMap?: Image[][]) {
+            super(sprites.castle.heroWalkFront1, SpriteKind.Player, imageMoveMap ? imageMoveMap : CLocalPlayer.defaultImageMoveMap);
+            this.dead = false;
         }
         private layoutTileLogic(tilePosX: number, tilePosY: number) {
             let tile: string = CLevelManager.currentLevel.mapLayout[tilePosY][tilePosX];
@@ -188,6 +195,7 @@ namespace Entity {
             return -1;
         }
         move(moveDirection?: MoveDirection) {
+            if (this.dead) return false;
             let directionX: number = 0;
             let directionY: number = 0;
 
@@ -249,28 +257,32 @@ namespace Entity {
                 this.changePosition(-1, 0);
             }
 
+            animation.runImageAnimation(this.sprite, this.imageMoveMap[moveDirection], 120, true)
+
             this.moveDirectionOld = moveDirection;
             if (this.afterMove)
                 this.afterMove()
             return true;
         }
-        /*update() {
+        update() {
             super.update()
-            switch (this.moveDirection) {
-                case MoveDirection.Down: {
-                    animation.runImageAnimation(null, [])
-                } break;
-                case MoveDirection.Top: {
-
-                } break;
-                case MoveDirection.Right: {
-
-                } break;
-                case MoveDirection.Left: {
-
-                } break;
+            if (this.dead) {
+                
             }
-        }*/
+        }
+        destroy() {
+            if (this.dead) return
+            this.dead = true
+            pause(100)
+            this.sprite.startEffect(effects.disintegrate)
+            this.sprite.startEffect(effects.fire)
+            super.destroy()
+            this.afterMove()
+            music.zapped.play()
+            pause(750)
+            info.setScore(g_Tick*100+g_Score);
+            game.over();
+        }
         toString() {
             return `CLocalPlayer [${this.id}; x:${this.posX} y:${this.posY}`;
         }
@@ -281,14 +293,13 @@ namespace Entity {
         state: StateEnemyBlob;
         target: CEntity;
         pathFinder: CPathFind;
-        constructor(imgSpriteImage: Image, spriteKind: number, posX?:number, posY?:number, imageMoveMap?: Image[][]) {
-            super(imgSpriteImage, spriteKind, imageMoveMap ? imageMoveMap : CEnemyBlob.defaultImageMoveMap);
+        constructor(posX?:number, posY?:number, imageMoveMap?: Image[][]) {
+            super(assets.image`enemyBlobCharged0`, SpriteKind.Enemy, imageMoveMap ? imageMoveMap : CEnemyBlob.defaultImageMoveMap);
             this.state = 0;
             this.pathFinder = new CPathFind();
             if (posX && posY) {
                 this.spawn(posX, posY);
             }
-            this.sprite.setImage(imgSpriteImage);
         }
         move(moveDirection?: MoveDirection) {
             if (!this.target) return;
@@ -296,13 +307,14 @@ namespace Entity {
             if (this.state == StateEnemyBlob.Move) { 
             } else {
                 path = this.pathFinder.pathFind(this.posX, this.posY, this.target.posX, this.target.posY, CLevelManager.currentLevel.mapLayout, [this.id]);
-                if (path.length > 1)
+                if (path.length > 0)
                 {
                     let ent = CLevelManager.entityAtPos(path[1].posX, path[1].posY)
                     if (!ent) { //localplayer is not in entity list
                         if (this.state == StateEnemyBlob.Ready) {
                             if (path.length == 2) { 
                                 this.target.destroy();
+                                this.setPosition(path[1].posX, path[1].posY);
                             } else {
                                 this.setPosition(path[1].posX, path[1].posY);
                             }
@@ -322,7 +334,7 @@ namespace Entity {
                                 this.moveDirection = MoveDirection.Top;
                             }
                         }
-                    } else { //next step blocked by entity - step back so enemys wont be sqished together
+                    } else { //next step blocked by entity - step back so enemys wont be squish together
                         let pathDiffX = path[1].posX - path[1].cameFromX;
                         let pathDiffY = path[1].posY - path[1].cameFromY;
 
@@ -335,21 +347,21 @@ namespace Entity {
                         tempNewPosX = path[0].posX + pathDiffX;
                         tempNewPosY = path[0].posY + pathDiffY;
                         let ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
-                        if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                        if (!ent && (CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#" || CLevelManager.entityAtPos(tempNewPosX, tempNewPosY))) {
                             newPosX = tempNewPosX;
                             newPosY = tempNewPosY;
                         } else {
                             tempNewPosX = path[0].posX + pathDiffX;
                             tempNewPosY = path[0].posY - pathDiffY;
                             ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
-                            if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                            if (!ent && (CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#" || CLevelManager.entityAtPos(tempNewPosX, tempNewPosY))) {
                                 newPosX = tempNewPosX;
                                 newPosY = tempNewPosY;
                             }else{
                                 tempNewPosX = path[0].posX - pathDiffX;
                                 tempNewPosY = path[0].posY + pathDiffY;
                                 ent = CLevelManager.entityAtPos(tempNewPosX, tempNewPosY)
-                                if (!ent && CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#") {
+                                if (!ent && (CLevelManager.currentLevel.mapLayout[tempNewPosX][tempNewPosY] != "#" || CLevelManager.entityAtPos(tempNewPosX, tempNewPosY))) {
                                     newPosX = tempNewPosX;
                                     newPosY = tempNewPosY;
                                 }
@@ -376,7 +388,11 @@ namespace Entity {
             }
 
             this.state = ++this.state % StateEnemyBlob.MAX;
-            animation.runImageAnimation(this.sprite, CEnemyBlob.defaultImageMoveMap[this.state], 120, true)
+            animation.runImageAnimation(this.sprite, this.imageMoveMap[this.state], 120, true)
+        }
+        attack() {
+            this.destroy();
+            music.smallCrash.play()
         }
         destroy() {
             super.destroy();
@@ -390,8 +406,8 @@ namespace Entity {
         static defaultImageMoveMap: Image[][]
         target: CEntity;
         pathFinder: CPathFind;
-        constructor(imgSpriteImage: Image, spriteKind: number, posX?:number, posY?:number, imageMoveMap?: Image[][]) {
-            super(imgSpriteImage, spriteKind, imageMoveMap ? imageMoveMap : CEnemySkull.defaultImageMoveMap);
+        constructor(posX?:number, posY?:number, imageMoveMap?: Image[][]) {
+            super(sprites.castle.skellyWalkFront1, SpriteKind.Enemy, imageMoveMap ? imageMoveMap : CEnemySkull.defaultImageMoveMap);
             this.pathFinder = new CPathFind();
             if (posX && posY) {
                 this.spawn(posX, posY);
@@ -466,8 +482,12 @@ namespace Entity {
                 }
             }
 
-            animation.runImageAnimation(this.sprite, CEnemyBlob.defaultImageMoveMap[0], 120, true)
+            animation.runImageAnimation(this.sprite, this.imageMoveMap[0], 120, true)
             //this.sprite.setImage(this.imageMoveMap[this.moveDirection][0]);
+        }
+        attack() {
+            this.destroy();
+            music.smallCrash.play()
         }
         destroy() {
             super.destroy();
@@ -489,7 +509,7 @@ namespace Entity {
         assets.animation`enemyBlobIdle`,
     ];
     Entity.CEnemySkull.defaultImageMoveMap = [
-        assets.animation`enemyBlobCharged`,
+        assets.animation`skellyWalkFront`
     ];
     Entity.CLocalPlayer.defaultImageMoveMap = [
         [sprites.castle.heroWalkBack1       ,sprites.castle.heroWalkBack2       ,sprites.castle.heroWalkBack3       ,sprites.castle.heroWalkBack4       ],

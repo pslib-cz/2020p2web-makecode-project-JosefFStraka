@@ -2,11 +2,12 @@ let g_Tick: number = 0;
 let g_Level: number = 0;
 let g_Score: number = 0;
 
-let localPlayer = new Entity.CLocalPlayer(sprites.castle.heroWalkFront1, SpriteKind.Player);
+let localPlayer = new Entity.CLocalPlayer();
 localPlayer.sprite.z = 1;
 
 CLevelManager.loadLevel(lvlLevelArr[g_Level]);
 localPlayer.afterMove = function() {
+    music.footstep.play()
     for (let i = 0; i < CLevelManager.entitys.length; i++) {
         CLevelManager.entitys[i].move();
     }
@@ -22,10 +23,6 @@ game.onUpdate(function() {
     for (let i = 0; i < CLevelManager.entitys.length; i++) {
         CLevelManager.entitys[i].update();
     }
-})
-localPlayer.sprite.onDestroyed(function() {
-    info.setScore(g_Tick);//*100+g_Score);
-    game.over();
 })
 game.onUpdateInterval(1000, function() {
     g_Score++;
